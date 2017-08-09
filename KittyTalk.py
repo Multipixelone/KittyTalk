@@ -1,7 +1,8 @@
 from flask import Flask, render_template, Response
 import datetime
 from Camera import VideoCamera
-import flask_uwsgi_websocket as GeventWebSocket
+from flask_uwsgi_websocket import GeventWebSocket
+import socket
 app = Flask(__name__)
 ws = GeventWebSocket(app)
 
@@ -25,6 +26,10 @@ def gen(camera):
 def video_feed():
     return Response(gen(VideoCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/audio.js')
+def audio():
+    return templates/audio.js
 
 @ws.route('/websocket')
 def audio(ws):
