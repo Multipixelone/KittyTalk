@@ -1,7 +1,9 @@
 from flask import Flask, render_template, Response
 import datetime
 from Camera import VideoCamera
+import flask_uwsgi_websocket as GeventWebSocket
 app = Flask(__name__)
+ws = GeventWebSocket(app)
 
 @app.route("/")
 def index():
@@ -23,3 +25,22 @@ def gen(camera):
 def video_feed():
     return Response(gen(VideoCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@ws.route('/websocket')
+def audio(ws):
+   first_message = True
+   total_msg = ""
+   sample_rate = 0
+
+   while True:
+      msg = ws.receive()
+
+      if first_message and msg is not None: # the first message should be the sample rate
+         sample_rate = getSampleRate(msg)
+         first_message = False
+         continue
+      elif msg is not None:
+         audio_as_int_array = numpy.frombuffer(msg, 'i2')
+         doSomething(audio_as_int_array)
+      else:
+         break
